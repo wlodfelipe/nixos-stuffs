@@ -109,6 +109,18 @@
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
+  
+  # environment variables
+  environment.variables = {
+    DB_USERNAME_eventicket = "eventicket_user";
+    DB_PASSWORD_eventicket = "root";
+    DB_URL_eventicket = "jdbc:postgresql://localhost:5432/eventicket";
+
+    
+
+    EmailFrom = "vtorlopescontato@gmail.com";
+    SenhaGmail = "xspgiyobvsqlcyhe";
+  };
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
@@ -150,6 +162,26 @@
     usql # db cli
     dbeaver-bin
     arduino-ide
+    postgresql
+    pgadmin4
+    discord
+    exiftool
+    burp
+    python312Packages.pip
+    go
+    maltego
+    file
+    unrar
+    xorg.xrandr
+    qrencode
+    zbar
+    holehe
+    nodejs_22
+    nodePackages."@angular/cli"
+    nodePackages."vscode-langservers-extracted"
+    vscode-extensions.angular.ng-template
+    lazygit
+    maim
 
   ];
 
@@ -159,19 +191,37 @@
     package = pkgs.mysql84; # or your desired MySQL version
   };
 
-  # dwm custom sources
-  services.xserver.windowManager.dwm.package = pkgs.dwm.overrideAttrs {
-    src = /etc/nixos/dwm;
-  };
+  # postgresql
+  services.postgresql.enable = true;
 
-  # dwm patches
-  #services.xserver.windowManager.dwm.package = pkgs.dwm.override {
-  #patches = [
+  # dwm custom sources
+  services.xserver.windowManager.dwm.package = pkgs.dwm.overrideAttrs (oldAttrs: rec {
+    src = /etc/nixos/dwm;
+    nativeBuildInputs = [ pkgs.pkg-config ] ++ (oldAttrs.nativeBuildInputs or []);
+    patches = [
+      (pkgs.fetchpatch {
+        url = "https://dwm.suckless.org/patches/uselessgap/dwm-uselessgap-6.2.diff";
+        hash = "sha256-s1FMbEjDHXYsu0VP2cidyfU1tOp8d7HCZ58rC7xm4Jc=";
+      })
+     #(pkgs.fetchpatch {
+     #  url = "https://dwm.suckless.org/patches/attachbelow/dwm-attachbelow-6.2.diff";  
+     #  hash = "sha256-Apy+bRQG/MgnJYgrT1aJ6tMrSaK89Ud1nFA/G8NdyqI=";  
+     #})
+    ];
+  });
 
   # picom 
   services.picom.enable = true;
 
-  # alias
+  # openssh
+  services.openssh.enable = true;
+  services.openssh.settings.PasswordAuthentication = false;
+  services.openssh.settings.X11Forwarding = true;
+
+  # fonts
+  fonts.packages = with pkgs; [
+    nerdfonts
+  ];  
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -187,7 +237,7 @@
   # services.openssh.enable = true;
 
   # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
+   networking.firewall.allowedTCPPorts = [ 22 ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
@@ -204,4 +254,3 @@
  # nix.settings.experimental-features = [ "nix-command" "flakes"];
 
 }
-
